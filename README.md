@@ -162,6 +162,35 @@ The diagram below shows a quick comparison between REST and GraphQL.
   <img src="images/graphQL.jpg">
 </p>
 
+https://aws.amazon.com/compare/the-difference-between-graphql-and-rest/
+* in common
+  - arch point of view
+    - does not save response history between requests
+    - client-server model, so requests from a single client result in replies from a single server
+    - HTTP as underlying communication protocal
+  - resource based design
+    - each object in resources has unique id
+    - 
+  - data exchange
+    - response in json format 
+    - support caching
+* difference
+  - REST limitation
+    - fixed-structure data exchange 
+    - over fetching or under fetching
+      - return data from same db
+      - multiple query to retrieve data from multiple db
+  - how to use
+    - REST
+      - HTTP verb : action; URL: resrouce to take action; param/value; example: GET /posts  # return all posts
+    - GraphQL
+      - query/mutation/subscription: example: GET /graphql?query{post(id: 1) {id title content}} #returns only the first post:
+  
+  - data access: REST has multiple endpoint, vs. graphQL only has one
+  - data returned: REST server defined; graphQL client defined
+  - use case: REST simple data structure, graphQL complex data structure
+  - data type: REST weakly typed, graphQL strong typed
+
 REST
 
 - Uses standard HTTP methods like GET, POST, PUT, DELETE for CRUD operations.
@@ -205,6 +234,20 @@ Steps 9 - 11: The result is returned from the server application, and gets encod
 
 Steps 12 - 14: The order service receives the packets, decodes them, and sends the result to the client application.
 
+是不是
+* client side application often use rest or graphQL? 
+* and internal service use gRPC calls
+  - micro-service which provide the service, has proto/package defined
+  - server side
+    - define class, method
+  - the client side just import the library and call the method
+    - need to know how to connect to server, 
+      - in python grpc.insecure_channel(target), secure_channel(target, CREDENTIAL)
+      - the same for java
+    - define service interface: several method, like , getXXXresponse(), getYYYresponse()
+    - define rpcClient which implement service
+
+
 ### What is a webhook?
 
 The diagram below shows a comparison between polling and Webhook. 
@@ -247,6 +290,15 @@ The diagram below shows 5 common tricks to improve API performance.
   <img src="images/api-performance.jpg">
 </p>
 
+1. client side, 
+  - pagenation; if data is large, could be send by min batch, so client could start consume the data while other part of data is still on the way
+2. server side: 
+  - caching on server side to improve the responsiveness
+  - async logging
+3. internet connection: 
+  - connection pool
+  - payload compression: to improve the data transmit
+
 Pagination
 
 This is a common optimization when the size of the result is large. The results are streaming back to the client to improve the service responsiveness.
@@ -277,15 +329,15 @@ The diagram below illustrates the key features.
   <img src="images/http3.jpg" />
 </p>
 
+**HOL blocking** - A browser is total number of parallel requests, when it is used up, subsequent requests need to wait for the former ones to complete. 
+
 - HTTP 1.0 was finalized and fully documented in 1996. Every request to the same server requires a separate TCP connection.
 
 - HTTP 1.1 was published in 1997. A TCP connection can be left open for reuse (persistent connection), but it doesn’t solve the HOL (head-of-line) blocking issue. 
 
-  HOL blocking - when the number of allowed parallel requests in the browser is used up, subsequent requests need to wait for the former ones to complete.
-
 - HTTP 2.0 was published in 2015. It addresses HOL issue through request multiplexing, which eliminates HOL blocking at the application layer, but HOL still exists at the transport (TCP) layer.
 
-  As you can see in the diagram, HTTP 2.0 introduced the concept of HTTP “streams”: an abstraction that allows multiplexing different HTTP exchanges onto the same TCP connection. Each stream doesn’t need to be sent in order.
+  As you can see in the diagram, HTTP 2.0 introduced the concept of HTTP “streams”: an abstraction that "allows multiplexing different HTTP exchanges onto the same TCP connection". Each stream doesn’t need to be sent in order.
 
 - HTTP 3.0 first draft was published in 2020. It is the proposed successor to HTTP 2.0. It uses QUIC instead of TCP for the underlying transport protocol, thus removing HOL blocking in the transport layer. 
 
@@ -302,6 +354,9 @@ You can check out the use cases of each style in the diagram.
 <p>
   <img src="images/SOAP vs REST vs GraphQL vs RPC.jpeg" />
 </p>
+**Why protocal matters?**
+* HTTP is a TCP/IP based protocol. So when you use REST you are already using TCP for communication. But if you want to use REST over pure TCP socket, without HTTP, then no, this doesn't make sense because REST is based on HTTP verbs and headers. Those notions exist only in the HTTP protocol. REST -> HTTP -> TCP
+* RPC uses HTTP/2 under the covers, but HTTP is not exposed to the API designer. gRPC-generated stubs and skeletons hide HTTP from the client and server too, so nobody has to worry how the RPC concepts are mapped to HTTP—they just have to learn gRPC. 
 
 
 ### Code First vs. API First 
@@ -311,7 +366,10 @@ The diagram below shows the differences between code-first development and API-f
 <p>
   <img src="images/api_first.jpg" style="width: 680px" />
 </p>
-
+1. API first <=> microservice
+2. microservice: decoupling/segregation of big duty
+3. collaboration via same language: API, less surprise
+4. system test could be easier, just mock request/response
 
 - Microservices increase system complexity and we have separate services to serve different functions of the system. While this kind of architecture facilitates decoupling and segregation of duty, we need to handle the various communications among services. 
 
@@ -382,14 +440,14 @@ Note that API design is not just URL path design. Most of the time, we need to c
 ### TCP/IP encapsulation 
 
 How is data sent over the network? Why do we need so many layers in the OSI model?
+The diagram below shows how data is encapsulated and de-encapsulated when transmitting over the network.
 
 <p>
   <img src="images/osi model.jpeg" />
 </p>
 
-The diagram below shows how data is encapsulated and de-encapsulated when transmitting over the network.
 
-Step 1: When Device A sends data to Device B over the network via the HTTP protocol, it is first added an HTTP header at the application layer.
+Step 1: When Device A sends data to Device B over the network via the HTTP protocol, it is first added an HTTP header at the application layer. 
 
 Step 2: Then a TCP or a UDP header is added to the data. It is encapsulated into TCP segments at the transport layer. The header contains the source port, destination port, and sequence number.
 
@@ -402,6 +460,48 @@ Step 5: The encapsulated frames are sent to the physical layer and sent over the
 Steps 6-10: When Device B receives the bits from the network, it performs the de-encapsulation process, which is a reverse processing of the encapsulation process. The headers are removed layer by layer, and eventually, Device B can read the data.
 
 We need layers in the network model because each layer focuses on its own responsibilities. Each layer can rely on the headers for processing instructions and does not need to know the meaning of the data from the last layer.
+
+
+* OSI: open system interconnection
+  - does each application has 7 layers or appliation only share layers?
+  - overall explanation: https://stackoverflow.com/questions/23157817/http-vs-tcp-ip-send-data-to-a-web-server
+* HTTP header: An HTTP header is a field of an HTTP request or response that passes additional context and metadata about the request or response. For example, a request message can use headers to indicate it's preferred media formats, while a response can use header to indicate the media format of the returned body
+* application layer: Two types of software provide access to the network within the application layer
+  - https://www.techtarget.com/searchnetworking/definition/Application-layer
+  - network-aware applications, such as email; 
+  - and application-level services, such as file transfer or print spooling.
+* presentation layer: 
+  - ensures the information that the application layer of one system sends out is readable by the application layer of another system. On the sending system it is responsible for conversion to standard, transmittable formats. On the receiving system it is responsible for the translation, formatting, and delivery of information for processing or display.
+  - why it is not taken care by application layer or session layer? In many widely used applications and protocols no distinction is actually made between the presentation and application layers. For example, HyperText Transfer Protocol (HTTP), generally regarded as an application-layer protocol,
+* session layer (rpc socket) https://www.geeksforgeeks.org/session-layer-in-osi-model/
+  - enables applications to establish and maintain sessions and to synchronize the sessions. 
+  - The ability to send larger amount of data files is extremely important and a necessary thing too.
+  - this layer basically provides a mechanism of opening, closing and managing a session between the end-user application processes
+  - The services offered by Session Layer are generally implemented in application environments using remote procedure calls (RPCs)
+  - so the application controlled/implemented by appliation 
+  - session Layer creates procedures for checkpointing followed by adjournment, restart and termination.
+  - protocal examples: rpcp, ...
+* transportation layer(TCP / UDP) https://www.imperva.com/learn/ddos/tcp-transmission-control-protocol/
+  - How should it know which one/program on the receiver side to deliver your message to? 
+  - TCP header: source port, dest port, sequence number, 
+  - TCP guarantees that bytes are transmitted in the order in which they were sent with no errors or omissions.
+  - establish connection: 3 way handshake
+  - send data by segments; each of which packaged into datagram and sent to its destination 
+* network layer:
+  - the IP header contains the source/destination IP addresses.
+  - IP is responsible for sending each packet to its destination,
+  - setting up the routes for data packets to take, checking to see if a server in another network is up and running, and addressing and receiving IP packets from other networks
+* data link layer: https://www.geeksforgeeks.org/data-link-layer/
+  - logical link control: divides them into small frames, then, sends each frame bit-by-bit to the next layer
+  - media access control: encapsulates the source and destination’s physical address in the header of each frame 
+  - data transfer speed/flow control: it’s the responsibility of DLL to synchronize the sender’s and receiver’s speeds and establish flow control between them. 
+* physical layer
+
+
+
+
+
+
 
 ### Why is Nginx called a “reverse” proxy?
 
@@ -598,6 +698,9 @@ We hope this cheat sheet provides high-level direction to pinpoint the right ser
 Note: Google has limited documentation for their database use cases. Even though we did our best to look at what was available and arrived at the best option, some of the entries may need to be more accurate. 
 
 ### 8 Data Structures That Power Your Databases
+General data strcture in terms of storage format
+* Seq based: Array
+* Pointer based: linkedList, tree, graph
 
 The answer will vary depending on your use case. Data can be indexed in memory or on disk. Similarly, data formats vary, such as numbers, strings, geographic coordinates, etc. The system might be write-heavy or read-heavy. All of these factors affect your choice of database index format. 
 
@@ -606,13 +709,55 @@ The answer will vary depending on your use case. Data can be indexed in memory o
 </p>
 
 The following are some of the most popular data structures used for indexing data: 
-
-- Skiplist: a common in-memory index type. Used in Redis 
-- Hash index: a very common implementation of the “Map” data structure (or “Collection”) 
-- SSTable: immutable on-disk “Map” implementation 
-- LSM tree: Skiplist + SSTable. High write throughput 
+- Hash index: a very common implementation of the “Map” data structure (or 
+- Skiplist: a common in-memory index type. Used in Redis;  
+  - its insert/removal, are log(n); if we add skip lenght => random access could also be improved to log(n)
+  - sorted array: search/lookup is O(1), but insert/removal is O(n) due to its data structure; 
+  - sorted double linked list: search/lookup is O(n), but insert/removal is O(1) due to its data structure; 
+  - used by redis/ in memory
+    - extra space: p + p^2 + 1 = 1/(1-p) times for space
+    - how many layers: while num of node in layer j > 1, 
+  - how to implement
+“Collection”) 
+- SSTable: immutable on-disk “Map” implementation;  used for document storage
+  - is a persistent file format used by ScyllaDB, Apache Cassandra, and other NoSQL databases to take the in-memory data stored in memtables, order it for fast access, and store it on disk in a persistent, ordered, immutable set of files
+  - An SSTable provides a persistent,ordered immutable map from keys to values, where both keys and values are arbitrary byte strings. Operations are provided to look up the value associated with a specified key, and to iterate over all key/value pairs in a specified key range. 
+  - Internally, each SSTable contains a sequence of blocks (typically each block is 64KB in size, but this is configurable). A block index (stored at the end of the SSTable) is used to locate blocks; the index is loaded into memory when the SSTable is opened. A lookup can be performed with a single disk seek: we first find the appropriate block by performing a binary search in the in-memory index, and then reading the appropriate block from disk. Optionally, an SSTable can be completely mapped into memory, which allows us to perform lookups and scans without touching disk.
+  - value in sstable: store the offset; where file is stored in a big continuous accessible disk
+- LSM tree: Skiplist + SSTable. High write throughput (ref: https://blog.devgenius.io/understanding-lsm-log-structured-merge-trees-4bf77777fef4)
+  - example 
+    - back system <p><img src="images/lsmt_system_img.webp"></p>; 
+    - used in Apache Cassandra and LevelDB, 
+  - components
+    - bloom filter: for write/request, check whether data in disk (sstable)
+    - WAL(write ahead log): which is a sequential write append log on disk. to improve the durability; != directly write to disk, which is random disk I/O; Open a file and append it, is it a sequential access? 
+    - memtable: used to store recently modified data, help efficient/ low-latency write operations; it can be implemented by skiplist; off-heap memory(not subject to java GC). 
+    - sstable: which is optimized for range query; as keys are sorted; b/c sstable is immutable data structure, once stored it will not be modified. any modification/delete => new sstable; 
+      - the sort key could be timestamp; 
+      - key creation: top level := most recent; bottom level with the older data
+      - periodic merge process: select(size, age, overlapping key range)
 - B-tree: disk-based solution. Consistent read/write performance 
+  - comapre with balck-red(binary version): internal node also hold data; and store data more efficiently
+  - compared with skip-list:
+    - B-tree: 
+      - more efficient 
+      - small overhead per key (internal node could store multiple keys)
+      - but complex to implement
+      - challenging in lock-free or concurrent to ensure atomicity during structural modifications
+    - skiplist
+      - easier to implement in lock-free or concurrent scenarios
+      - probabilistic 
+  - why it is used in disk based index? 
+    - each node has multiple key
+      - for sequential access which is important for disk I/O
+      - read relatively fewer blocks
+      - range queries
+    - balanceness
+      - handle large database
+      - cache efficiency
+    - predictable performance
 - Inverted index: used for document indexing. Used in Lucene 
+  - used in lucenne/elastic search (not traditional db)
 - Suffix tree: for string pattern search 
 - R-tree: multi-dimension search, such as finding the nearest neighbor 
 
@@ -641,6 +786,24 @@ Step 7 - If the statement is an UPDATE or INSERT, it is passed to the transactio
 
 Step 8 - During a transaction, the data is in lock mode. This is guaranteed by the lock manager. It also ensures the transaction’s ACID properties. 
 
+##### SQL topic summary
+  - establish connection between client and database server 
+  - example protocal JDBC: does not define protocol, rely on underlying database-specific drivers to communicate with the databases. 
+    - type-4 thin driver'
+    - it does not dffine a specific protocol, it provides standardized API
+  - execuation
+    - read only: buffer manager, cache/data files
+    - transaction: transaction manager a). data is in lock mode by lock manager; b). ensure the ACID properties,  which are 
+      - atomicity: as single, not further divisible 
+      - consistency: preserve integrity constraints and business rules; money taken then all copies could realized the change
+      - isolation: one transaction will not affect other transactions
+      - durability: transaction committed will be permanent, will stay the same with system failure 
+
+  - data transfer
+    - data serialization in binary format or json or xml for easy transmit and reconstruction
+    - database specific protocal
+
+
 ###  CAP theorem
 
 The CAP theorem is one of the most famous terms in computer science, but I bet different developers have different understandings. Let’s examine what it is and why it can be confusing. 
@@ -649,11 +812,11 @@ The CAP theorem is one of the most famous terms in computer science, but I bet d
   <img src="images/cap theorem.jpeg" />
 </p>
 
-CAP theorem states that a distributed system can't provide more than two of these three guarantees simultaneously.
+CAP theorem states that a **distributed system** can't provide more than two of these three guarantees simultaneously.
 
 **Consistency**: consistency means all clients see the same data at the same time no matter which node they connect to.
 
-**Availability**: availability means any client that requests data gets a response even if some of the nodes are down.
+**Availability**: availability means any client that requests data gets a response even if some of the nodes are down. A continuous measurement of availability is latency.
 
 **Partition Tolerance**: a partition indicates a communication break between two nodes. Partition tolerance means the system continues to operate despite network partitions. 
 
@@ -663,11 +826,31 @@ The “2 of 3” formulation can be useful, **but this simplification could be m
 
 2. “CAP prohibits only a tiny part of the design space: perfect availability and consistency in the presence of partitions, which are rare”. Quoted from the paper: CAP Twelve Years Later: How the “Rules” Have Changed.
 
-3. The theorem is about 100% availability and consistency. A more realistic discussion would be the trade-offs between latency and consistency when there is no network partition. See PACELC theorem for more details.
+3. The theorem is about 100% availability and consistency. A more realistic discussion would be the trade-offs between latency(how long it take to populate changes to all nodes, long latency=not available) and consistency when there is no network partition. See PACELC theorem for more details.
 
 **Is the CAP theorem actually useful?**
 
 I think it is still useful as it opens our minds to a set of tradeoff discussions, but it is only part of the story. We need to dig deeper when picking the right database.
+
+**EXAMPE**
+* CA system: single node, does not tolerant partition; single node database
+* CP systems: strong consitency required, used in banks, financial system; zookeeper, big table
+* AP systems: does not have to be consistent, but need to be available or low latency for purpose of user experience
+  - DynamoDB is a fully managed NoSQL database service provided by Amazon Web Services (AWS). It is designed for high availability and scalability. DynamoDB is often classified as an AP system because it prioritizes availability and partition tolerance, allowing for continuous operation in the face of network partitions. It provides eventual consistency by default but also allows users to configure stronger consistency if needed.
+  - Apache Cassandra is an open-source, distributed NoSQL database that is designed for high availability and scalability. It follows a peer-to-peer architecture and is known for its ability to scale horizontally across multiple nodes. Cassandra is classified as an AP system because it prioritizes availability and partition tolerance over strong consistency.
+  - Redis is an in-memory data store that can be used for caching, session storage, and more. While Redis is often used for its speed and simplicity, when configured for high availability using Redis Sentinel or Redis Cluster, it becomes more of an AP system. It prioritizes availability and may provide eventual consistency
+    - it is master-slave;
+      - slave read only
+      - min-replicas-to-write to consider as successful write 
+      - control the durability: write to disk, no, every_second, always
+      - sentinal: monitor; if one master fail, promote one of its replica for availability
+    - data partition: use data partition across multiple nodes, each responsible for a subset of data; could scale horizontally. 
+    - async replication, from master node to its replica; 
+    - used in high performance use case, like cache, session storage, real-time analystics, message queuee. 
+    - conflict resolution: last-write-wins
+  - CouchDB is an open-source NoSQL database that uses a document-oriented model. It is designed for ease of replication and distribution. CouchDB is often considered an AP system because it prioritizes availability and allows for flexible, eventually consistent replication across nodes.
+  - Amazon S3 is a scalable object storage service that provides high availability and durability for storing and retrieving data. S3 is designed to be highly available even in the face of network partitions, making it an AP system. It provides eventual consistency for read-after-write scenarios.
+
 
 ### Types of Memory and Storage
 
@@ -675,6 +858,12 @@ I think it is still useful as it opens our minds to a set of tradeoff discussion
   <img src="images/Types_of_Memory_and_Storage.jpeg" style="width: 420px" />
 </p>
 
+* memory
+  - rom
+  - RAM
+    - SRAM (Static Random Access Memory), faster and low latency, often used for cache memory
+    - DRAM (Dynamic Random Access Memory), need periodic refreshing
+* storage
 
 ### Visualizing a SQL query
 
@@ -728,22 +917,35 @@ This diagram illustrates where we cache data in a typical architecture.
 There are **multiple layers** along the flow.
 
 1. Client apps: HTTP responses can be cached by the browser. We request data over HTTP for the first time, and it is returned with an expiry policy in the HTTP header; we request data again, and the client app tries to retrieve the data from the browser cache first.
+  * one site could have multiple cookie with different values, for example uuid, country, with different expiration, as it would take some resrouce to generate these values
+
 2. CDN: CDN caches static web resources. The clients can retrieve data from a CDN node nearby.
+  * components
+    - where the content from: origin server/data center, the authoritive of data source
+    - edge servers: as caching proxies, storing copies of web contenct closer to end users
+    - caching
+    - load balancing: cross multiple edge servers, so that no single server become overload
+    - scalability/security
+    - it does not design to handle write request
+    - how to handle dynamic content: based on request, edge server computing
+    
 3. Load Balancer: The load Balancer can cache resources as well.
 4. Messaging infra: Message brokers store messages on disk first, and then consumers retrieve them at their own pace. Depending on the retention policy, the data is cached in Kafka clusters for a period of time.
 5. Services: There are multiple layers of cache in a service. If the data is not cached in the CPU cache, the service will try to retrieve the data from memory. Sometimes the service has a second-level cache to store data on disk.
 6. Distributed Cache: Distributed cache like Redis holds key-value pairs for multiple services in memory. It provides much better read/write performance than the database.
 7. Full-text Search: we sometimes need to use full-text searches like Elastic Search for document search or log search. A copy of data is indexed in the search engine as well.
-8. Database: Even in the database, we have different levels of caches:
-- WAL(Write-ahead Log): data is written to WAL first before building the B tree index
-- Bufferpool: A memory area allocated to cache query results
-- Materialized View: Pre-compute query results and store them in the database tables for better query performance
-- Transaction log: record all the transactions and database updates
-- Replication Log: used to record the replication state in a database cluster
+8. Database: 
+  * Even in the database, we have different levels of caches:
+    - WAL(Write-ahead Log): data is written to WAL first before building the B tree index
+    - Bufferpool: A memory area allocated to cache query results
+    - Materialized View: Pre-compute query results and store them in the database tables for better query performance
+    - Transaction log: record all the transactions and database updates
+    - Replication Log: used to record the replication state in a database cluster
 
 ### Why is Redis so fast? 
 
 There are 3 main reasons as shown in the diagram below.
+https://www.linkedin.com/pulse/why-heck-single-threaded-redis-lightning-fast-beyond-in-memory-kapur 
 
 <p>
   <img src="images/why_redis_fast.jpeg" />
@@ -751,10 +953,36 @@ There are 3 main reasons as shown in the diagram below.
 
 
 1. Redis is a RAM-based data store. RAM access is at least 1000 times faster than random disk access.
-2. Redis leverages IO multiplexing and single-threaded execution loop for execution efficiency.
+  * 120 ns
+    - ssd 120 us
+    - HDD 1-10 ms
+2. Redis leverages IO multiplexing and single-threaded execution loop for execution efficiency. 
+  * using single thread to monitoring multiple client connections(each connection has an associated thread)
+    - if multiple thread do IO => increase memory overhead, thread synchronization overhead (lock), context switch
+    - single thread to achieve, by using OS provied system calls like "select, pool, epoll", which allow the application to wait for events on multiple I/O streams
+  * single threaded architecture, where all cmd exe in sequential order
+    - atomic and consitency and avoid race condition
+  * all clients to send multiple request
 3. Redis leverages several efficient lower-level data structures.
+  * index: skiplist, hashmap
+
+4. build distributed cache with redis (https://stackoverflow.com/questions/18376665/redis-distributed-or-not)
+  * Q1 single machine has cap on redis capacity: 
+  * Q2 is redis a distributed system or not: 
+    - sentinal only cover role management, side effect improve availability 
+    - build AP: write to master, but read from all instance
+    - build CP: always conntec to master  
+    - sharding vs. master/slave
+  * conclusion: If you need an off-the-shelf distributed store, Redis is probably not a good option. You will be better served by Cassandra, Riak, MongoDB, Couchbase, Aerospike, MySQL Cluster, Oracle NoSQL, etc ... However, if you want to build your own specialized system, Redis is an excellent component to build upon.
+  * new version of redis: https://redis.io/docs/management/scaling/
+    - scalability sharding  based on hashing
+    - availability replica
+  
 
 Question: Another popular in-memory store is Memcached. Do you know the differences between Redis and Memcached?
+https://aws.amazon.com/elasticache/redis-vs-memcached/
+* redis is more rich features
+* memcached for simplicity 
 
 You might have noticed the style of this diagram is different from my previous posts. Please let me know which one you prefer.
 
@@ -813,6 +1041,11 @@ Redis can be used in a variety of scenarios as shown in the diagram.
 
 Designing large-scale systems usually requires careful consideration of caching. 
 Below are five caching strategies that are frequently utilized. 
+1. cache side: application responsible for cache update after read
+2. read through: check cache, if miss query db, then update cache, then return to client from cache
+3. write back: write to cache first, then write to DB
+  - back: to db once for a while
+  - through: to db immediately
 
 <p>
   <img src="images/top_caching_strategy.jpeg" style="width: 680px" />
