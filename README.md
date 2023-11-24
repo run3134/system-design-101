@@ -410,6 +410,19 @@ The diagram below shows the details.
   <img src="images/api_gateway.jpg" style="width: 520px" />
 </p>
 
+API gateway responsibility
+* parse info/attributes from http request
+  - check user id based allow/deny list
+  - ID: authentication password
+  - rate limit 
+* route the request to proper backend microservice 
+* improvement
+  - caching
+* misc functions
+  - error handling 
+  - logging
+  - monitoring
+
 Step 1 - The client sends an HTTP request to the API gateway. 
 
 Step 2 - The API gateway parses and validates the attributes in the HTTP request. 
@@ -516,8 +529,8 @@ A forward proxy is a server that sits between user devices and the internet.
 A forward proxy is commonly used for: 
 
 1. Protecting clients
-2. Circumventing browsing restrictions
-3. Blocking access to certain content
+2. Blocking access to certain content
+3. Circumventing browsing restrictions, b/c some proxy has block the access to certani content, so choose different proxy could circumvent
 
 A reverse proxy is a server that accepts a request from the client, forwards the request to web servers, and returns the results to the client as if the proxy server had processed the request.
 
@@ -536,7 +549,7 @@ The diagram below shows 6 common algorithms.
   <img src="images/lb-algorithms.jpg" />
 </p>
 
-- Static Algorithms 
+- Static Algorithms (pre-specified rule)
 
 1. Round robin
 
@@ -554,7 +567,7 @@ The diagram below shows 6 common algorithms.
 
     This algorithm applies a hash function on the incoming requests’ IP or URL. The requests are routed to relevant instances based on the hash function result. 
 
-- Dynamic Algorithms
+- Dynamic Algorithms (performance based)
 
 5. Least connections
 
@@ -1073,10 +1086,10 @@ The diagram below shows a typical microservice architecture.
 - Microservices: Microservices are designed and deployed in different domains. Each domain has its own database. The API gateway talks to the microservices via REST API or other protocols, and the microservices within the same domain talk to each other using RPC (Remote Procedure Call).
 
 Benefits of microservices:
-
-- They can be quickly designed, deployed, and horizontally scaled.
-- Each domain can be independently maintained by a dedicated team.
-- Business requirements can be customized in each domain and better supported, as a result.
+* decoupled
+  - Each domain can be independently maintained by a dedicated team.
+  - Business requirements can be customized in each domain and better supported, as a result.
+  - They can be quickly designed, deployed, and horizontally scaled.
 
 ### Microservice Best Practices
 
@@ -1116,10 +1129,24 @@ Below you will find a diagram showing the microservice tech stack, both for the 
 
 ▶️ 𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
 
-- NGinx is a common choice for load balancers. Cloudflare provides CDN (Content Delivery Network). 
-- API Gateway - We can use spring boot for the gateway, and use Eureka/Zookeeper for service discovery.
+- load balancer: NGinx is a common choice for load balancers. 
+- CDN: Cloudflare provides CDN (Content Delivery Network). 
+- API Gateway: - We can use 
+  - criteria
+    - scale: how easy to scale; how much vol
+    - latency
+    - integration with graphQL, etc
+  - spring boot for the gateway (https://www.solo.io/topics/api-gateway/api-gateway-spring-boot/)
+    - how to use sprint cloud gateway: https://spring.io/guides/gs/gateway/
+  - flask(https://www.reddit.com/r/flask/comments/etajkg/how_to_make_an_api_gateway_in_flask/)
+    - authentication: https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login with flask-login library to handle user sessions
+    - authorization: https://flask-authorize.readthedocs.io/en/latest/ from flask_authorize import Authorize
+    - rate limit: https://medium.com/analytics-vidhya/how-to-rate-limit-routes-in-flask-61c6c791961b
+- Service register/discovery: Eureka/Zookeeper for service discovery.
+   - Eureka: https://spring.io/guides/gs/service-registration-and-discovery/
+   - zookeeper: https://dzone.com/articles/zookeeper-for-microservice-registration-and-discov
 - The microservices are deployed on clouds. We have options among AWS, Microsoft Azure, or Google GCP.
-Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
+- Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
 - Communications - For services to talk to each other, we can use messaging infra Kafka or RPC.
 - Persistence - We can use MySQL or PostgreSQL for a relational database, and Amazon S3 for object store. We can also use Cassandra for the wide-column store if necessary.
 - Management & Monitoring - To manage so many microservices, the common Ops tools include Prometheus, Elastic Stack, and Kubernetes.
@@ -1128,9 +1155,32 @@ Cache and Full-text Search - Redis is a common choice for caching key-value pair
 
 There are many design decisions that contributed to Kafka’s performance. In this post, we’ll focus on two. We think these two carried the most weight.
 
+why Kafka is fast is? https://technology.inmobi.com/articles/2023/05/29/the-underlying-reason-behind-kafkas-speed
+* its sequential I/O, stores all the data it ingests in a log-structured format, which means that new data is appended to the end of the log. This allows for very fast writes, since only the latest data needs to be appended, but it also means that older data needs to be periodically compacted to reclaim disk space.
+  - disk
+    - 316 values/sec
+    - 53.2M values/sec
+  - SSD
+    - 2k
+    - 42.2 M 
+  - RAM
+    - 36.7M
+    - 358M
+* zero copy principle (no temporary buffer): a traditional approach would be to copy the data from the source location to a temporary buffer, and then copy it again to the destination location. However, the zero-copy principle eliminates this intermediate step by allowing the data to be transferred directly from the source location to the destination location, without the need for an intermediate copy. 
+  - memory mapping: a process to access a file or other data source as if it were in its own memory space
+  - Direct memory access (DMA) device to directly access memory: This technique allows a device, such as a network card or disk controller, to transfer data directly to or from memory, without the need for the CPU to be involved in the transfer.
+  - user space library: like zero-copy libraries can help to implement zero-copy principles and eliminate the unnecessary data copies.
+  - traditional way: disk == read by os==> page cache in kernel -- read by app --> user space buffer 
+    -- write by app --> socket buffer in kernel == copy by os ==> NIC
+  - new way: by using sendfile system call, modern Unix operating systems like Linux can transfer data from page cache to a socket efficiently, avoiding unnecessary copies and system calls 
+  - <p><img src="images/Kafka_sendfile.png" /></p>
+
+
+
 <p>
   <img src="images/why_is_kafka_fast.jpeg" />
 </p>
+
 
 1. The first one is Kafka’s reliance on Sequential I/O.
 2. The second design choice that gives Kafka its performance advantage is its focus on efficiency: zero copy principle.
