@@ -1070,12 +1070,12 @@ Below are five caching strategies that are frequently utilized.
 
 ### What does a typical microservice architecture look like? 
 
+The diagram below shows a typical microservice architecture. 
+
 <p>
   <img src="images/typical-microservice-arch.jpg" style="width: 520px" />
 </p>
 
-
-The diagram below shows a typical microservice architecture. 
 
 - Load Balancer: This distributes incoming traffic across multiple backend services. 
 - CDN (Content Delivery Network): CDN is a group of geographically distributed servers that hold static content for faster delivery. The clients look for content in CDN first, then progress  to backend services.
@@ -1090,6 +1090,55 @@ Benefits of microservices:
   - Each domain can be independently maintained by a dedicated team.
   - Business requirements can be customized in each domain and better supported, as a result.
   - They can be quickly designed, deployed, and horizontally scaled.
+
+
+### What tech stack is commonly used for microservices?
+
+Below you will find a diagram showing the microservice tech stack, both for the development phase and for production.
+
+<p>
+  <img src="images/microservice-tech.jpeg" />
+</p>
+
+
+▶️ 𝐏𝐫𝐞-𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
+
+- Define API - This establishes a contract between frontend and backend. We can use Postman or OpenAPI for this.
+- Development - Node.js or react is popular for frontend development, and java/python/go for backend development. Also, we need to change the configurations in the API gateway according to API definitions.
+- Continuous Integration - JUnit and Jenkins for automated testing. The code is packaged into a Docker image and deployed as microservices.
+
+▶️ 𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧 (map to a typical microservice architecture)
+
+- load balancer: NGinx is a common choice for load balancers. 
+- CDN: Cloudflare provides CDN (Content Delivery Network). 
+- API Gateway: - We can use 
+  - criteria
+    - scale: how easy to scale; how much vol
+    - latency
+    - integration with graphQL, etc
+  - spring boot for the gateway (https://www.solo.io/topics/api-gateway/api-gateway-spring-boot/)
+    - how to use sprint cloud gateway: https://spring.io/guides/gs/gateway/
+  - flask(https://www.reddit.com/r/flask/comments/etajkg/how_to_make_an_api_gateway_in_flask/)
+    - authentication: https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login with flask-login library to handle user sessions
+    - authorization: https://flask-authorize.readthedocs.io/en/latest/ from flask_authorize import Authorize
+    - rate limit: https://medium.com/analytics-vidhya/how-to-rate-limit-routes-in-flask-61c6c791961b
+- Service register/discovery: Eureka/Zookeeper for service discovery.
+   - Eureka: https://spring.io/guides/gs/service-registration-and-discovery/
+   - zookeeper: https://dzone.com/articles/zookeeper-for-microservice-registration-and-discov
+- The microservices are deployed on clouds. We have options among AWS, Microsoft Azure, or Google GCP.
+- Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
+- Communications - For services to talk to each other, we can use messaging infra Kafka or RPC (https://www.quora.com/How-should-I-choose-between-gRPC-and-Kafka-when-building-microservices)
+  - kafka push info to other services
+    - async
+    - it needs message broker to handle message delivery (at most once, at least once, exact once)
+    - introducing something like Kafka adds to the overall complexity of your system, so you need to judge whether the benefits outweigh the costs of that
+    - use case: 
+      - data flow: take a stream of msg|events, transform it, and pass them to other services
+  - rpc pull informace
+    - sync
+- Persistence - We can use MySQL or PostgreSQL for a relational database, and Amazon S3 for object store. We can also use Cassandra for the wide-column store if necessary.
+- Management & Monitoring - To manage so many microservices, the common Ops tools include Prometheus, Elastic Stack, and Kubernetes.
+
 
 ### Microservice Best Practices
 
@@ -1112,44 +1161,7 @@ When we develop microservices, we need to follow the following best practices:
 8. Design micro frontend 
 9. Orchestrating microservices 
 
-### What tech stack is commonly used for microservices?
 
-Below you will find a diagram showing the microservice tech stack, both for the development phase and for production.
-
-<p>
-  <img src="images/microservice-tech.jpeg" />
-</p>
-
-
-▶️ 𝐏𝐫𝐞-𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
-
-- Define API - This establishes a contract between frontend and backend. We can use Postman or OpenAPI for this.
-- Development - Node.js or react is popular for frontend development, and java/python/go for backend development. Also, we need to change the configurations in the API gateway according to API definitions.
-- Continuous Integration - JUnit and Jenkins for automated testing. The code is packaged into a Docker image and deployed as microservices.
-
-▶️ 𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
-
-- load balancer: NGinx is a common choice for load balancers. 
-- CDN: Cloudflare provides CDN (Content Delivery Network). 
-- API Gateway: - We can use 
-  - criteria
-    - scale: how easy to scale; how much vol
-    - latency
-    - integration with graphQL, etc
-  - spring boot for the gateway (https://www.solo.io/topics/api-gateway/api-gateway-spring-boot/)
-    - how to use sprint cloud gateway: https://spring.io/guides/gs/gateway/
-  - flask(https://www.reddit.com/r/flask/comments/etajkg/how_to_make_an_api_gateway_in_flask/)
-    - authentication: https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login with flask-login library to handle user sessions
-    - authorization: https://flask-authorize.readthedocs.io/en/latest/ from flask_authorize import Authorize
-    - rate limit: https://medium.com/analytics-vidhya/how-to-rate-limit-routes-in-flask-61c6c791961b
-- Service register/discovery: Eureka/Zookeeper for service discovery.
-   - Eureka: https://spring.io/guides/gs/service-registration-and-discovery/
-   - zookeeper: https://dzone.com/articles/zookeeper-for-microservice-registration-and-discov
-- The microservices are deployed on clouds. We have options among AWS, Microsoft Azure, or Google GCP.
-- Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
-- Communications - For services to talk to each other, we can use messaging infra Kafka or RPC.
-- Persistence - We can use MySQL or PostgreSQL for a relational database, and Amazon S3 for object store. We can also use Cassandra for the wide-column store if necessary.
-- Management & Monitoring - To manage so many microservices, the common Ops tools include Prometheus, Elastic Stack, and Kubernetes.
 
 ### Why is Kafka fast
 
