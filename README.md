@@ -107,6 +107,260 @@ Whether you're preparing for a System Design Interview or you simply want to und
 
 <!-- /TOC -->
 
+## Architecture patterns
+
+### MVC, MVP, MVVM, MVVM-C, and VIPER
+These architecture patterns are among the most commonly used in app development, whether on iOS or Android platforms. Developers have introduced them to overcome the limitations of earlier patterns. So, how do they differ? 
+
+<p>
+  <img src="images/client arch patterns.png" style="width: 720px" />
+</p>
+
+* MVC, the oldest pattern, dates back almost 50 years 
+  - https://github.com/run3134/system-design-101/blob/main/README.md#architecture-patterns
+  - Moel
+    - has DB component
+    - talk to DB, by get/set
+    - it will be called by activities
+  - View and Contoller are handled by activity
+    - it listen to activities
+    - when activity happens, it contains the logic how activity will be handled, how data in the model will be called
+* Every pattern has a "view" (V) responsible for displaying content and receiving user input 
+* Most patterns include a "model" (M) to manage business data 
+* "Controller," "presenter," and "view-model" are translators that mediate between the view and the model ("entity" in the VIPER pattern)
+
+### 18 Key Design Patterns Every Developer Should Know
+
+Patterns are reusable templates to common design problems, 
+- serving as blueprints for building better software structures. 
+- resulting in a smoother, more efficient development process.
+These are some of the most popular patterns: 
+
+<p>
+  <img src="images/18-oo-patterns.png" />
+</p>
+
+* creational pattern: These design patterns provide a way to create objects while hiding the creation logic, rather than instantiating objects directly using new operator. This gives program more flexibility in deciding which objects need to be created for a given use case.
+  - Abstract Factory: Family Creator - Makes groups of related items. 
+    - step1: create abstract class/interface
+    - step2: define concrete class by implementing the interface
+    - step3: create factory with method getShape(param)
+    - step4: demo main
+  - Builder: Lego Master - Builds objects step by step, keeping creation and appearance separate. 
+    - step1: create simple object
+    - step2: create complext object
+  - Prototype: Clone Maker - Creates copies of fully prepared examples. (https://www.tutorialspoint.com/design_pattern/prototype_pattern.htm)
+    - when it is costly to create from obj from scratch b/c of db call
+    - step1: concrete class, with clone abilty
+    - step2: cache of objects
+    - step3: when need to create objects, check cache first; if in cache, then fetch+clone; otherwise, create+cache
+  - Singleton: One and Only - A special class with just one instance. **when import the class: there is an unique instance**
+    - step1: create class with private constructor
+    - step2: initiate an instance of the class within the class definition
+    - step3: provide method to fetch the instance
+* structural pattern: These design patterns concern class and object composition. Concept of inheritance is used to compose interfaces and define ways to compose objects to obtain new functionalities.
+  - Adapter: Universal Plug - Connects things with different interfaces. https://www.tutorialspoint.com/design_pattern/adapter_pattern.htm
+    - step1: there are two interface, without any relationship
+    - step2: adapter implement one interface(higher level), inside it has field which is type of detail interface
+    - step3: when define the hgih level methods, it use parameterization
+    - step4: then concrete class can implement high level class
+  - Bridge: Function Connector - Links how an object works to what it does. 
+    - create 一个instance 的时候，需要有param + 其他的instance
+    - 其他instance 的class 可以evolve indpendently
+  - Composite: Tree Builder - Forms tree-like structures of simple and complex parts. 
+    - a class that contains group of its own objects
+  - Decorator: Customizer - **Adds features** to objects without changing their core. 
+    - step1: the original class is a field
+    - step2: override the method with 
+      - call the method by field.original_method()
+      - add new functionality
+  - Facade: One-Stop-Shop - Represents a whole system with a single, simplified interface. 
+    - like combination of: factory + composition
+    - when a facade is created: many instance are actualy created
+    - we can have access to all functions by each instance or in parameterized way
+  - Flyweight: Space Saver - Shares small, reusable items efficiently. 
+    - like prototype to cache created obj
+    - it also need to reset filed value, as we are not going to create new instance; reuse same instance by reset field values
+  - Proxy: Stand-In Actor - Represents another object, controlling access or actions. 
+    - the example: https://www.tutorialspoint.com/design_pattern/proxy_pattern.htm
+    - it create lazy construction: actual instance is created until it is used
+* behavioral pattern: These design patterns are specifically concerned with communication between objects.
+  - Chain of Responsibility: Request Relay - Passes a request through a chain of objects until handled. 
+    - normally each receiver contains reference to another receiver. If one object cannot handle the request then it passes the same to the next receiver and so on.
+      - reference is set in field called: nextlogger
+  - Command: Task Wrapper - Turns a request into an object, ready for action. 
+    - 
+  - Iterator: Collection Explorer - Accesses elements in a collection one by one. 
+    - get a way to access the elements of a collection object in sequential manner without any need to know its underlying representation
+  - Mediator: Communication Hub - Simplifies interactions between different classes. 
+    - example: class chatRoom{ def showMsg(senderName, msg)}
+    - each user has method:= send_msg, chatRoom, need to take that msg
+    - **relationship between {users} and chatRoom???**
+  - Memento: Time Capsule - Captures and restores an object's state. 
+    - memento: one class state 
+    - memos: queue of historical states
+    - relationship between memos and oringinator
+  - Observer: News Broadcaster - Notifies classes about changes in other objects. 
+  - Visitor: Skillful Guest - Adds new operations to a class without altering it.
+
+
+## Microservice architecture
+
+### What does a typical microservice architecture look like? 
+
+The diagram below shows a typical microservice architecture. 
+
+<p>
+  <img src="images/typical-microservice-arch.jpg" style="width: 520px" />
+</p>
+
+
+- Load Balancer: This distributes incoming traffic across multiple backend services. 
+- CDN (Content Delivery Network): CDN is a group of geographically distributed servers that hold static content for faster delivery. The clients look for content in CDN first, then progress  to backend services.
+- API Gateway: This handles incoming requests and routes them to the relevant services. It talks to the identity provider and service discovery.
+- Identity Provider: This handles authentication and authorization for users. 
+- Service Registry & Discovery: Microservice registration and discovery happen in this component, and the API gateway looks for relevant services in this component to talk to. 
+- Management: This component is responsible for monitoring the services.
+- Microservices: Microservices are designed and deployed in different domains. Each domain has its own database. The API gateway talks to the microservices via REST API or other protocols, and the microservices within the same domain talk to each other using RPC (Remote Procedure Call).
+
+Benefits of microservices:
+* decoupled
+  - Each domain can be independently maintained by a dedicated team.
+  - Business requirements can be customized in each domain and better supported, as a result.
+  - They can be quickly designed, deployed, and horizontally scaled.
+
+
+### What tech stack is commonly used for microservices?
+
+Below you will find a diagram showing the microservice tech stack, both for the development phase and for production.
+
+<p>
+  <img src="images/microservice-tech.jpeg" />
+</p>
+
+
+▶️ 𝐏𝐫𝐞-𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
+
+- Define API - This establishes a contract between frontend and backend. We can use Postman or OpenAPI for this.
+- Development 
+  - Node.js or react is popular for frontend development, 
+  - and java/python/go for backend development. Also, we need to change the configurations in the API gateway according to API definitions.
+- Continuous Integration - JUnit and Jenkins for automated testing. The code is packaged into a Docker image and deployed as microservices.
+
+▶️ 𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧 (map to a typical microservice architecture)
+
+- load balancer: NGinx is a common choice for load balancers. 
+- CDN: Cloudflare provides CDN (Content Delivery Network). 
+- API Gateway: - We can use 
+  - criteria
+    - scale: how easy to scale; how much vol
+    - latency
+    - integration with graphQL, etc
+  - spring boot for the gateway (https://www.solo.io/topics/api-gateway/api-gateway-spring-boot/)
+    - how to use sprint cloud gateway: https://spring.io/guides/gs/gateway/
+  - flask(https://www.reddit.com/r/flask/comments/etajkg/how_to_make_an_api_gateway_in_flask/)
+    - authentication: https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login with flask-login library to handle user sessions
+    - authorization: https://flask-authorize.readthedocs.io/en/latest/ from flask_authorize import Authorize
+    - rate limit: https://medium.com/analytics-vidhya/how-to-rate-limit-routes-in-flask-61c6c791961b
+- Service register/discovery: Eureka/Zookeeper for service discovery.
+   - Eureka: https://spring.io/guides/gs/service-registration-and-discovery/
+   - zookeeper: https://dzone.com/articles/zookeeper-for-microservice-registration-and-discov
+- The microservices are deployed on clouds. We have options among AWS, Microsoft Azure, or Google GCP.
+- Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
+- Communications - For services to talk to each other, we can use messaging infra Kafka or RPC (https://www.quora.com/How-should-I-choose-between-gRPC-and-Kafka-when-building-microservices)
+  - kafka push info to other services
+    - async
+    - it needs message broker to handle message delivery (at most once, at least once, exact once)
+    - introducing something like Kafka adds to the overall complexity of your system, so you need to judge whether the benefits outweigh the costs of that
+    - use case: 
+      - data flow: take a stream of msg|events, transform it, and pass them to other services
+  - rpc pull informace
+    - sync
+- Persistence - We can use MySQL or PostgreSQL for a relational database, and Amazon S3 for object store. We can also use Cassandra for the wide-column store if necessary.
+- Management & Monitoring - To manage so many microservices, the common Ops tools include Prometheus, Elastic Stack, and Kubernetes.
+
+
+### Microservice Best Practices
+
+A picture is worth a thousand words: 9 best practices for developing microservices.
+
+<p>
+  <img src="images/microservice-best-practices.jpeg" />
+</p>
+
+ 
+When we develop microservices, we need to follow the following best practices: 
+* design
+  - Assign each microservice with a single responsibility 
+  - Design stateless services 
+  - Adopt domain-driven design
+  - Design micro frontend 
+  - Orchestrating microservices 
+* code/dev
+  - Keep code at a similar level of maturity 
+  - Separate build for each microservice 
+  - Deploy into containers 
+  - Use separate data storage for each microservice 
+
+
+### Why is Kafka fast
+
+There are many design decisions that contributed to Kafka’s performance. In this post, we’ll focus on two. We think these two carried the most weight.
+
+why Kafka is fast is? https://technology.inmobi.com/articles/2023/05/29/the-underlying-reason-behind-kafkas-speed
+* its sequential I/O, stores all the data it ingests in a log-structured format, which means that new data is appended to the end of the log. This allows for very fast writes, since only the latest data needs to be appended, but it also means that older data needs to be periodically compacted to reclaim disk space.
+  - disk
+    - 316 values/sec
+    - 53.2M values/sec
+  - SSD
+    - 2k
+    - 42.2 M 
+  - RAM
+    - 36.7M
+    - 358M
+* zero copy principle (no temporary buffer): a traditional approach would be to copy the data from the source location to a temporary buffer, and then copy it again to the destination location. However, the zero-copy principle eliminates this intermediate step by allowing the data to be transferred directly from the source location to the destination location, without the need for an intermediate copy. 
+  - memory mapping: a process to access a file or other data source as if it were in its own memory space
+  - Direct memory access (DMA) device to directly access memory: This technique allows a device, such as a network card or disk controller, to transfer data directly to or from memory, without the need for the CPU to be involved in the transfer.
+  - user space library: like zero-copy libraries can help to implement zero-copy principles and eliminate the unnecessary data copies.
+  - traditional way: disk == read by os==> page cache in kernel -- read by app --> user space buffer 
+    -- write by app --> socket buffer in kernel == copy by os ==> NIC
+  - new way: by using sendfile system call, modern Unix operating systems like Linux can transfer data from page cache to a socket efficiently, avoiding unnecessary copies and system calls 
+  - <p><img src="images/Kafka_sendfile.png" /></p>
+
+
+<p>
+  <img src="images/why_is_kafka_fast.jpeg" />
+</p>
+
+
+1. The first one is Kafka’s reliance on Sequential I/O.
+2. The second design choice that gives Kafka its performance advantage is its focus on efficiency: zero copy principle.
+ 
+The diagram illustrates how the data is transmitted between producer and consumer, and what zero-copy means.
+ 
+- Step 1.1 - 1.3: Producer writes data to the disk 
+- Step 2: Consumer reads data without zero-copy
+
+2.1 The data is loaded from disk to OS cache
+
+2.2 The data is copied from OS cache to Kafka application
+
+2.3 Kafka application copies the data into the socket buffer 
+
+2.4 The data is copied from socket buffer to network card
+
+2.5 The network card sends data out to the consumer
+
+ 
+- Step 3: Consumer reads data with zero-copy
+
+3.1: The data is loaded from disk to OS cache
+3.2 OS cache directly copies the data to the network card via sendfile() command
+3.3 The network card sends data out to the consumer
+ 
+Zero copy is a shortcut to save the multiple data copies between application context and kernel context.
+
+
 ## Communication protocols
 
 Architecture styles define how different components of an application programming interface (API) interact with one another. As a result, they ensure efficiency, reliability, and ease of integration with other systems by providing a standard approach to designing and building APIs. Here are the most used styles:
@@ -512,10 +766,6 @@ We need layers in the network model because each layer focuses on its own respon
 
 
 
-
-
-
-
 ### Why is Nginx called a “reverse” proxy?
 
 The diagram below shows the differences between a 𝐟𝐨𝐫𝐰𝐚𝐫𝐝 𝐩𝐫𝐨𝐱𝐲 and a 𝐫𝐞𝐯𝐞𝐫𝐬𝐞 𝐩𝐫𝐨𝐱𝐲.
@@ -602,99 +852,6 @@ URN stands for Uniform Resource Name. It uses the urn scheme. URNs cannot be use
 
 If you would like to learn more detail on the subject, I would recommend [W3C’s clarification](https://www.w3.org/TR/uri-clarification/).
 
-## CI/CD
-
-### CI/CD Pipeline Explained in Simple Terms
-
-<p>
-  <img src="images/ci-cd-pipeline.jpg" style="width: 680px" />
-</p>
-
-Section 1 - SDLC with CI/CD
-
-The software development life cycle (SDLC) consists of several key stages: development, testing, deployment, and maintenance. CI/CD automates and integrates these stages to enable faster and more reliable releases.
-
-When code is pushed to a git repository, it triggers an automated build and test process. End-to-end (e2e) test cases are run to validate the code. If tests pass, the code can be automatically deployed to staging/production. If issues are found, the code is sent back to development for bug fixing. This automation provides fast feedback to developers and reduces the risk of bugs in production.
-
-Section 2 - Difference between CI and CD
-
-Continuous Integration (CI) automates the build, test, and merge process. It runs tests whenever code is committed to detect integration issues early. This encourages frequent code commits and rapid feedback.
-
-Continuous Delivery (CD) automates release processes like infrastructure changes and deployment. It ensures software can be released reliably at any time through automated workflows. CD may also automate the manual testing and approval steps required before production deployment.
-
-Section 3 - CI/CD Pipeline
-
-A typical CI/CD pipeline has several connected stages:
-- The developer commits code changes to the source control
-- CI server detects changes and triggers the build
-- Code is compiled, and tested (unit, integration tests)
-- Test results reported to the developer
-- On success, artifacts are deployed to staging environments
-- Further testing may be done on staging before release
-- CD system deploys approved changes to production
-
-### Netflix Tech Stack (CI/CD Pipeline)
-
-<p>
-  <img src="images/netflix-ci-cd.jpg" style="width: 720px" />
-</p>
-
-Planning: Netflix Engineering uses JIRA for planning and Confluence for documentation. 
-
-Coding: Java is the primary programming language for the backend service, while other languages are used for different use cases.  
-
-Build: Gradle is mainly used for building, and Gradle plugins are built to support various use cases.  
-
-Packaging: Package and dependencies are packed into an Amazon Machine Image (AMI) for release. 
-
-Testing: Testing emphasizes the production culture's focus on building chaos tools.  
-
-Deployment: Netflix uses its self-built Spinnaker for canary rollout deployment.  
-
-Monitoring: The monitoring metrics are centralized in Atlas, and Kayenta is used to detect anomalies.  
-
-Incident report: Incidents are dispatched according to priority, and PagerDuty is used for incident handling. 
-
-## Architecture patterns
-
-### MVC, MVP, MVVM, MVVM-C, and VIPER
-These architecture patterns are among the most commonly used in app development, whether on iOS or Android platforms. Developers have introduced them to overcome the limitations of earlier patterns. So, how do they differ? 
-
-<p>
-  <img src="images/client arch patterns.png" style="width: 720px" />
-</p>
-
-- MVC, the oldest pattern, dates back almost 50 years 
-- Every pattern has a "view" (V) responsible for displaying content and receiving user input 
-- Most patterns include a "model" (M) to manage business data 
-- "Controller," "presenter," and "view-model" are translators that mediate between the view and the model ("entity" in the VIPER pattern)
-
-### 18 Key Design Patterns Every Developer Should Know
-
-Patterns are reusable solutions to common design problems, resulting in a smoother, more efficient development process. They serve as blueprints for building better software structures. These are some of the most popular patterns: 
-
-<p>
-  <img src="images/18-oo-patterns.png" />
-</p>
-
-- Abstract Factory: Family Creator - Makes groups of related items. 
-- Builder: Lego Master - Builds objects step by step, keeping creation and appearance separate. 
-- Prototype: Clone Maker - Creates copies of fully prepared examples. 
-- Singleton: One and Only - A special class with just one instance. 
-- Adapter: Universal Plug - Connects things with different interfaces. 
-- Bridge: Function Connector - Links how an object works to what it does. 
-- Composite: Tree Builder - Forms tree-like structures of simple and complex parts. 
-- Decorator: Customizer - Adds features to objects without changing their core. 
-- Facade: One-Stop-Shop - Represents a whole system with a single, simplified interface. 
-- Flyweight: Space Saver - Shares small, reusable items efficiently. 
-- Proxy: Stand-In Actor - Represents another object, controlling access or actions. 
-- Chain of Responsibility: Request Relay - Passes a request through a chain of objects until handled. 
-- Command: Task Wrapper - Turns a request into an object, ready for action. 
-- Iterator: Collection Explorer - Accesses elements in a collection one by one. 
-- Mediator: Communication Hub - Simplifies interactions between different classes. 
-- Memento: Time Capsule - Captures and restores an object's state. 
-- Observer: News Broadcaster - Notifies classes about changes in other objects. 
-- Visitor: Skillful Guest - Adds new operations to a class without altering it.
 
 ## Database
 
@@ -1065,162 +1222,6 @@ Below are five caching strategies that are frequently utilized.
 </p>
 
 
-
-## Microservice architecture
-
-### What does a typical microservice architecture look like? 
-
-The diagram below shows a typical microservice architecture. 
-
-<p>
-  <img src="images/typical-microservice-arch.jpg" style="width: 520px" />
-</p>
-
-
-- Load Balancer: This distributes incoming traffic across multiple backend services. 
-- CDN (Content Delivery Network): CDN is a group of geographically distributed servers that hold static content for faster delivery. The clients look for content in CDN first, then progress  to backend services.
-- API Gateway: This handles incoming requests and routes them to the relevant services. It talks to the identity provider and service discovery.
-- Identity Provider: This handles authentication and authorization for users. 
-- Service Registry & Discovery: Microservice registration and discovery happen in this component, and the API gateway looks for relevant services in this component to talk to. 
-- Management: This component is responsible for monitoring the services.
-- Microservices: Microservices are designed and deployed in different domains. Each domain has its own database. The API gateway talks to the microservices via REST API or other protocols, and the microservices within the same domain talk to each other using RPC (Remote Procedure Call).
-
-Benefits of microservices:
-* decoupled
-  - Each domain can be independently maintained by a dedicated team.
-  - Business requirements can be customized in each domain and better supported, as a result.
-  - They can be quickly designed, deployed, and horizontally scaled.
-
-
-### What tech stack is commonly used for microservices?
-
-Below you will find a diagram showing the microservice tech stack, both for the development phase and for production.
-
-<p>
-  <img src="images/microservice-tech.jpeg" />
-</p>
-
-
-▶️ 𝐏𝐫𝐞-𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧
-
-- Define API - This establishes a contract between frontend and backend. We can use Postman or OpenAPI for this.
-- Development - Node.js or react is popular for frontend development, and java/python/go for backend development. Also, we need to change the configurations in the API gateway according to API definitions.
-- Continuous Integration - JUnit and Jenkins for automated testing. The code is packaged into a Docker image and deployed as microservices.
-
-▶️ 𝐏𝐫𝐨𝐝𝐮𝐜𝐭𝐢𝐨𝐧 (map to a typical microservice architecture)
-
-- load balancer: NGinx is a common choice for load balancers. 
-- CDN: Cloudflare provides CDN (Content Delivery Network). 
-- API Gateway: - We can use 
-  - criteria
-    - scale: how easy to scale; how much vol
-    - latency
-    - integration with graphQL, etc
-  - spring boot for the gateway (https://www.solo.io/topics/api-gateway/api-gateway-spring-boot/)
-    - how to use sprint cloud gateway: https://spring.io/guides/gs/gateway/
-  - flask(https://www.reddit.com/r/flask/comments/etajkg/how_to_make_an_api_gateway_in_flask/)
-    - authentication: https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login with flask-login library to handle user sessions
-    - authorization: https://flask-authorize.readthedocs.io/en/latest/ from flask_authorize import Authorize
-    - rate limit: https://medium.com/analytics-vidhya/how-to-rate-limit-routes-in-flask-61c6c791961b
-- Service register/discovery: Eureka/Zookeeper for service discovery.
-   - Eureka: https://spring.io/guides/gs/service-registration-and-discovery/
-   - zookeeper: https://dzone.com/articles/zookeeper-for-microservice-registration-and-discov
-- The microservices are deployed on clouds. We have options among AWS, Microsoft Azure, or Google GCP.
-- Cache and Full-text Search - Redis is a common choice for caching key-value pairs. Elasticsearch is used for full-text search.
-- Communications - For services to talk to each other, we can use messaging infra Kafka or RPC (https://www.quora.com/How-should-I-choose-between-gRPC-and-Kafka-when-building-microservices)
-  - kafka push info to other services
-    - async
-    - it needs message broker to handle message delivery (at most once, at least once, exact once)
-    - introducing something like Kafka adds to the overall complexity of your system, so you need to judge whether the benefits outweigh the costs of that
-    - use case: 
-      - data flow: take a stream of msg|events, transform it, and pass them to other services
-  - rpc pull informace
-    - sync
-- Persistence - We can use MySQL or PostgreSQL for a relational database, and Amazon S3 for object store. We can also use Cassandra for the wide-column store if necessary.
-- Management & Monitoring - To manage so many microservices, the common Ops tools include Prometheus, Elastic Stack, and Kubernetes.
-
-
-### Microservice Best Practices
-
-A picture is worth a thousand words: 9 best practices for developing microservices.
-
-<p>
-  <img src="images/microservice-best-practices.jpeg" />
-</p>
-
- 
-When we develop microservices, we need to follow the following best practices: 
-
-1. Use separate data storage for each microservice 
-2. Keep code at a similar level of maturity 
-3. Separate build for each microservice 
-4. Assign each microservice with a single responsibility 
-5. Deploy into containers 
-6. Design stateless services 
-7. Adopt domain-driven design
-8. Design micro frontend 
-9. Orchestrating microservices 
-
-
-
-### Why is Kafka fast
-
-There are many design decisions that contributed to Kafka’s performance. In this post, we’ll focus on two. We think these two carried the most weight.
-
-why Kafka is fast is? https://technology.inmobi.com/articles/2023/05/29/the-underlying-reason-behind-kafkas-speed
-* its sequential I/O, stores all the data it ingests in a log-structured format, which means that new data is appended to the end of the log. This allows for very fast writes, since only the latest data needs to be appended, but it also means that older data needs to be periodically compacted to reclaim disk space.
-  - disk
-    - 316 values/sec
-    - 53.2M values/sec
-  - SSD
-    - 2k
-    - 42.2 M 
-  - RAM
-    - 36.7M
-    - 358M
-* zero copy principle (no temporary buffer): a traditional approach would be to copy the data from the source location to a temporary buffer, and then copy it again to the destination location. However, the zero-copy principle eliminates this intermediate step by allowing the data to be transferred directly from the source location to the destination location, without the need for an intermediate copy. 
-  - memory mapping: a process to access a file or other data source as if it were in its own memory space
-  - Direct memory access (DMA) device to directly access memory: This technique allows a device, such as a network card or disk controller, to transfer data directly to or from memory, without the need for the CPU to be involved in the transfer.
-  - user space library: like zero-copy libraries can help to implement zero-copy principles and eliminate the unnecessary data copies.
-  - traditional way: disk == read by os==> page cache in kernel -- read by app --> user space buffer 
-    -- write by app --> socket buffer in kernel == copy by os ==> NIC
-  - new way: by using sendfile system call, modern Unix operating systems like Linux can transfer data from page cache to a socket efficiently, avoiding unnecessary copies and system calls 
-  - <p><img src="images/Kafka_sendfile.png" /></p>
-
-
-
-<p>
-  <img src="images/why_is_kafka_fast.jpeg" />
-</p>
-
-
-1. The first one is Kafka’s reliance on Sequential I/O.
-2. The second design choice that gives Kafka its performance advantage is its focus on efficiency: zero copy principle.
- 
-The diagram illustrates how the data is transmitted between producer and consumer, and what zero-copy means.
- 
-- Step 1.1 - 1.3: Producer writes data to the disk 
-- Step 2: Consumer reads data without zero-copy
-
-2.1 The data is loaded from disk to OS cache
-
-2.2 The data is copied from OS cache to Kafka application
-
-2.3 Kafka application copies the data into the socket buffer 
-
-2.4 The data is copied from socket buffer to network card
-
-2.5 The network card sends data out to the consumer
-
- 
-- Step 3: Consumer reads data with zero-copy
-
-3.1: The data is loaded from disk to OS cache
-3.2 OS cache directly copies the data to the network card via sendfile() command
-3.3 The network card sends data out to the consumer
- 
-Zero copy is a shortcut to save the multiple data copies between application context and kernel context.
-
 ## Payment systems
 
 ### How to learn payment systems?
@@ -1305,6 +1306,60 @@ UPI = payment markup language + standard for interoperable payments
 <p>
   <img src="images/how-does-upi-work.png"  style="width: 600px" />
 </p>
+
+
+## CI/CD
+
+### CI/CD Pipeline Explained in Simple Terms
+
+<p>
+  <img src="images/ci-cd-pipeline.jpg" style="width: 680px" />
+</p>
+
+Section 1 - SDLC with CI/CD
+
+The software development life cycle (SDLC) consists of several key stages: development, testing, deployment, and maintenance. CI/CD automates and integrates these stages to enable faster and more reliable releases.
+
+When code is pushed to a git repository, it triggers an automated build and test process. End-to-end (e2e) test cases are run to validate the code. If tests pass, the code can be automatically deployed to staging/production. If issues are found, the code is sent back to development for bug fixing. This automation provides fast feedback to developers and reduces the risk of bugs in production.
+
+Section 2 - Difference between CI and CD
+
+Continuous Integration (CI) automates the build, test, and merge process. It runs tests whenever code is committed to detect integration issues early. This encourages frequent code commits and rapid feedback.
+
+Continuous Delivery (CD) automates release processes like infrastructure changes and deployment. It ensures software can be released reliably at any time through automated workflows. CD may also automate the manual testing and approval steps required before production deployment.
+
+Section 3 - CI/CD Pipeline
+
+A typical CI/CD pipeline has several connected stages:
+- The developer commits code changes to the source control
+- CI server detects changes and triggers the build
+- Code is compiled, and tested (unit, integration tests)
+- Test results reported to the developer
+- On success, artifacts are deployed to staging environments
+- Further testing may be done on staging before release
+- CD system deploys approved changes to production
+
+### Netflix Tech Stack (CI/CD Pipeline)
+
+<p>
+  <img src="images/netflix-ci-cd.jpg" style="width: 720px" />
+</p>
+
+Planning: Netflix Engineering uses JIRA for planning and Confluence for documentation. 
+
+Coding: Java is the primary programming language for the backend service, while other languages are used for different use cases.  
+
+Build: Gradle is mainly used for building, and Gradle plugins are built to support various use cases.  
+
+Packaging: Package and dependencies are packed into an Amazon Machine Image (AMI) for release. 
+
+Testing: Testing emphasizes the production culture's focus on building chaos tools.  
+
+Deployment: Netflix uses its self-built Spinnaker for canary rollout deployment.  
+
+Monitoring: The monitoring metrics are centralized in Atlas, and Kayenta is used to detect anomalies.  
+
+Incident report: Incidents are dispatched according to priority, and PagerDuty is used for incident handling. 
 
 
 ## DevOps
