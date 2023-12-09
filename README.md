@@ -730,7 +730,10 @@ We need layers in the network model because each layer focuses on its own respon
 
 * OSI: open system interconnection
   - does each application has 7 layers or appliation only share layers?
-  - overall explanation: https://stackoverflow.com/questions/23157817/http-vs-tcp-ip-send-data-to-a-web-server
+  - overall explanation
+    - https://stackoverflow.com/questions/23157817/http-vs-tcp-ip-send-data-to-a-web-server
+    - https://www.plixer.com/blog/network-layers-explained/
+    - https://www.pearsonitcertification.com/articles/article.aspx?p=1730891
 * HTTP header: An HTTP header is a field of an HTTP request or response that passes additional context and metadata about the request or response. For example, a request message can use headers to indicate it's preferred media formats, while a response can use header to indicate the media format of the returned body
 * application layer: Two types of software provide access to the network within the application layer
   - https://www.techtarget.com/searchnetworking/definition/Application-layer
@@ -859,6 +862,111 @@ If you would like to learn more detail on the subject, I would recommend [W3C’
 <p>
   <img src="images/cloud-dbs2.png" />
 </p>
+
+CRUD operations
+* Create: Documents can be created in the database. Each document has a unique identifier.
+* Read: Documents can be read from the database. The API or query language allows developers to query for documents using their unique identifiers or field values. Indexes can be added to the database in order to increase read performance.
+* Update: Existing documents can be updated — either in whole or in part.
+* Delete: Documents can be deleted from the database.
+
+* structured 
+  - relational: 
+    - aws: RDS
+    - Oracle
+    - postgreSQL
+    - MySQL
+  - columnar: https://thenewstack.io/what-is-a-column-database-and-when-should-you-use-one/
+    - It has seven different tables, one for each Person attribute, such as Person.Height. Each table has two columns: The piece of data they're storing and a Person ID.
+      - it is less work to go through Person.Heights table
+      - columnar db often maintain useful stats
+    - use case and advantage
+      - optimized
+        - better compression due to the same data type of each column
+        - store multiple version of the same col
+        - adaptive index / vectorize processing
+      - trade off
+        - update / write individual data point => write/update in batch
+        - if read all columns of rows
+    - aws: redshift
+    - snowflake
+* semi structured
+  - key-value
+    - aws: dynamoDB
+    - redis (Remote Dictionary Server.):
+      - how to install/start
+        - brew install redis
+        - redis-server
+        - redis-cli
+      - how to represent table: with colums? use hahses (https://redis.io/docs/get-started/data-store/)
+        - use primary key as hash: and store the rest of the {col:val} into object => only fetch by primary key
+        - if want to filter by other columns, which are not primary/unique key: could use set 
+          - https://redis.io/docs/data-types/sets/
+          - sadd other_col:value primary_col:value # there is set name:= other_col:value and member
+          - smembers other_col:value => all primary_col:values # if it is common key => redis max size = 2^32 ~ 4,294,967,295
+      - get|set: are used to store/fetch simple strings: if it is stored as SET, has to fetch by GET, otherwise  ERR wrong number of arguments for 'hget' command
+      - hset|hget: are used to store objects; 1). the object has to be even => dict; otherwise ERR wrong number of arguments for 'hset' command
+    - memcache: 
+      - https://www.dragonflydb.io/guides/memcached
+      - https://www.tutorialspoint.com/memcached/memcached_incr_decr.htm
+  - wide column (https://db-engines.com/en/article/Wide+Column+Stores)
+    - a record can have billions of columns => can be seen as two-dimensional key-value stores. which is the reason of called "wide column DB"
+    - aws: keyspaces
+    - HBase: 
+    - cassandra 
+      - install: https://www.javatpoint.com/how-to-install-cassandra-on-mac;
+      - run: export JAVA_HOME=$(/usr/libexec/java_home -v 1.8), then run cassandra -f => service started; then run cqlsh localhost in another terminal; 
+      - use: https://www.datastax.com/blog/working-apache-cassandra-mac-os-x
+      - use cases: https://www.datastax.com/blog/exploring-common-apache-cassandra-use-cases
+      - based on ideas of BigTable and DynamoDB
+      - Cassandra has the concept of a keyspace, which is similar to a database in a RDBMS
+      - meaning that rows in a column family can have different columns depending on the data you want to store for a particular row
+        - could add column incrementally, alter table add (new_col type);
+        - the missing column will be null;
+        - should not use * to query all columns, but instead should specify the desired columns
+      - if you want to query columns other than the primary key, you need to create a secondary index on them:
+  - in-memory
+    - aws: elastCache
+    - redis
+    - memcache
+  - time series
+  - immutable ledger
+  - gepspatial
+  - graph
+  - document
+    - A document typically stores information about one object and any of its related metadata, Documents can be stored in formats like JSON, BSON, and XML.
+    - A collection is a group of documents. Collections typically store documents that have similar contents. Not all document has the same filed
+    - why document db
+      - Low Performance on json data
+      - json data validation
+      - addtional vendor language to support json
+      - no native scale out
+    - aws: documentDB
+    - MongoDB (https://www.mongodb.com/document-databases)
+      - https://www.mongodb.com/docs/manual/reference/method/db.collection.insertMany/
+      - databases, collections, documents; language similar to graph query
+      - Fields in a document play the role of columns in a SQL database, and like columns, they can be indexed to increase search performance.
+      - use cases
+        - describing complex data
+        - integration large amount of diverse data => flexible of bring data together
+      - scaling https://www.mongodb.com/basics/scaling
+        - replication
+          - it native make the system more resilient to node failer, but 
+          - increase read from nodes
+          - write to primry
+        - sharding
+          - more complex scaling, client application connects to a sharded cluster through a router that directs the requests to the appropriate nodes.
+    - couchbase
+  - text search
+* unstructured : blob
+  - aws: s3
+  - 
+
+
+Use cases
+* DB + memcache => Cassandra
+  - Cassandra provides both durable storage, and an integrated, high performance cache (the "row cache"). 
+  - This prevents problems like memcached being populated from an out of date slave (what Twitter calls "potential consistency") and simplifies cluster management.
+
 
 Choosing the right database for your project is a complex task. Many database options, each suited to distinct use cases, can quickly lead to decision fatigue. 
 
@@ -1461,15 +1569,24 @@ There are 3 components in Docker architecture:
 
 - Docker client 
     
-    The docker client talks to the Docker daemon. 
+    The docker client submit cmd, to the Docker daemon, host will decide if it is necessary to connect registry.
+    It provides a command line interface (CLI) that allows you to issue build, run, and stop application commands to a Docker daemon. 
+    It connects host and registry. 
 
 - Docker host 
 
     The Docker daemon listens for Docker API requests and manages Docker objects such as images, containers, networks, and volumes. 
+    Will container run on the host? 
 
 - Docker registry 
 
     A Docker registry stores Docker images. Docker Hub is a public registry that anyone can use. 
+
+Docker objects
+- image
+- container
+- network
+- volumes
 
 Let’s take the “docker run” command as an example. 
 
@@ -1478,6 +1595,88 @@ Let’s take the “docker run” command as an example.
   1. Docker allocates a read-write filesystem to the container. 
   1. Docker creates a network interface to connect the container to the default network. 
   1. Docker starts the container.
+
+
+Learn kubenetes
+* overall walk through example: https://kubernetes.io/docs/tutorials/hello-minikube/
+  - explose app
+  - scaling: by chance number of replica
+    - with scaling, do we still need load-balancer within kubenetes?
+    - multiple kubenete behiind real load balancer?
+* install 
+  - kubectl: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl.sha256"
+  - sudo mv ./kubectl /usr/local/bin/kubectl
+  - kubectl cluster-info # which does not work
+  - minikube: curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-darwin-amd64
+  - kubectl completion zsh
+  - minikube start => kubectl is now configured to use "minikube" cluster and "default" namespace by default
+  - then "kubectl get po -A" works
+  - minikube dashboard # open local webpage
+* kubenete action resource
+  - kubectl: kubenete api to interact with the cluster
+  - actions
+    - create (to create deployment)
+    - log: print log info from a container in pad
+    - delete (to delete service)
+    - get (pods, nodes, deployments, etc): to list resources
+      - get based on label: kubectl get pods -l label_name=label_value
+    - describe: detail info about a resources
+    - exec: 
+      - execute a command on a container in a pod (必须要这个container support 的command 么？)
+      - get all containers on a pod: kubectl get pods pod_name_here -o jsonpath='{.spec.containers[*].name}' (https://stackoverflow.com/questions/33924198/how-do-you-cleanly-list-all-the-containers-in-a-kubernetes-pod)
+      - see details on https://kubernetes.io/docs/tutorials/kubernetes-basics/explore/explore-intro/
+      - list env variables: kubectl exec "$POD_NAME" -- env
+      - run bash on the container: kubectl exec -ti $POD_NAME -- bash ==> after it is running: cat server.js
+    - expose, To create a new service and expose it to external traffic we'll use the expose command with NodePort as parameter.
+      - parameter: deployment/deployment_name; type, port
+    - proxy: a connection between our host (the terminal) and the Kubernetes cluster. The proxy enables direct access to the API from these terminals.
+      - with kubectl proxy, terminal could connect to cluster
+      - get pod name by "export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')"
+      - connect to pod by "curl http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/"
+    - label: to tag a new label to a existing pod
+    - scale: "kubectl scale deployments/kubernetes-bootcamp --replicas=1"
+  - resources
+    - pods
+      - shared resources: storage (volumns), networking, 
+      - A Pod models an application-specific "logical host" and can contain different application containers which are relatively tightly coupled;(怎么把tightly coupled 的container 放在一起? ); as pod create when deployment, 是不是可以deployment 的时候 有多个container
+      - atomic unit on the Kubernetes platform
+      - created when we deployment, there is label
+    - nodes: a VM or a physical computer that serves as a worker machine
+      - kubelet: an agent for managing the node and communicating with the Kubernetes control plane
+      - container runtime
+      - multiple nodes: otherwise an etcd member and a control plane instance are lost
+    - deployments: instructs Kubernetes how to create and update instances of your application
+      - "kubectl create deployment deployment_name --image=xxxx"
+      - in the controller panel, will create have a deployment object (which include a deployment controller), deployment controller will monitor the instance
+      - it will create instance for the app in a node
+      - need: 1). container image, 2). number of replica;
+      - will create pod, container both?
+    - service (which is result of expose command)
+      - "kubectl explose deployment/deployment_name"
+      - A Service routes traffic across a set of Pods
+      - service type: clusterIP, nodePort, loadBalancer (https://stackoverflow.com/questions/41509439/whats-the-difference-between-clusterip-nodeport-and-loadbalancer-service-types?rq=2)
+      - match a set of Pods using labels and selectors
+    - label (key/value pair for pods, one pod could have multiple labels)
+      - "kubectl label pods "$POD_NAME" version=v1" to create new label to a pod
+    
+* create a kubenetes cluster
+  - control panel: coordinates all activities in your cluster, such as scheduling applications, maintaining applications' desired state, scaling applications, and rolling out new updates.
+    - kube-apiserver
+    - etcd
+    - kube-scheduler
+    - kube-controller-manager
+    - cloud-controller-manager
+  - node: 
+    
+* deploy an app
+* explore your app
+* expose your app publically
+* scale up your app
+* update your app
+
+Learn docker
+
 
 ## GIT
 
@@ -1541,7 +1740,7 @@ Rebase can be dangerous if “the golden rule of git rebase” is not followed.
 
 **The Golden Rule of Git Rebase**
 
-Never use it on public branches!
+Never use it on public branches! (https://stackoverflow.com/questions/2046638/use-of-git-rebase-in-public-feature-branches)
 
 ## Cloud Services
 
@@ -1566,13 +1765,13 @@ This means the applications are designed to leverage cloud features, so they are
 
 Cloud native includes 4 aspects: 
 
-1. Development process 
-
-    This has progressed from waterfall to agile to DevOps. 
-
-2. Application Architecture 
+1. Application Architecture 
 
     The architecture has gone from monolithic to microservices. Each service is designed to be small, adaptive to the limited resources in cloud containers. 
+
+2. Development process 
+
+    This has progressed from waterfall to agile to DevOps. 
 
 3. Deployment & packaging 
 
@@ -1658,6 +1857,129 @@ This diagram below shows popular Linux commands:
 
 ## Security
 
+### Session, cookie, JWT, token, SSO, and OAuth 2.0 - what are they?
+
+These terms are all related to user identity management. When you log into a website, you declare who you are (identification). Your identity is verified (authentication), and you are granted the necessary permissions (authorization). Many solutions have been proposed in the past, and the list keeps growing.
+
+<p>
+  <img src="images/session.jpeg" />
+</p>
+
+From simple to complex, here is my understanding of user identity management:
+
+- WWW-Authenticate is the most basic method. You are asked for the username and password by the browser. As a result of the inability to control the login life cycle, it is seldom used today.
+
+- A finer control over the login life cycle is session-cookie. The server maintains session storage, and the browser keeps the ID of the session. A cookie usually only works with browsers and is not mobile app friendly.
+
+- To address the compatibility issue, the token can be used. The client sends the token to the server, and the server validates the token. The downside is that the token needs to be encrypted and decrypted, which may be time-consuming.
+
+- JWT is a standard way of representing tokens. This information can be verified and trusted because it is digitally signed. Since JWT contains the signature, there is no need to save session information on the server side.
+
+- By using SSO (single sign-on), you can sign on only once and log in to multiple websites. It uses CAS (central authentication service) to maintain cross-site information.
+
+- By using OAuth 2.0, you can authorize one website to access your information on another website.
+
+
+
+* basic authentication 
+  - https://en.wikipedia.org/wiki/Basic_access_authentication
+  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate
+  - HTTP user agent to provide a user name and password; a request contains a header field in the form of Authorization:Basic<credentials>, where credentials is base64 encoded of id:pwd
+  - it does not require cookie, session, but use basic HTTP header; 
+  - Because the BA field has to be sent in the header of each HTTP request, the web browser needs to cache credentials for a reasonable period of time to avoid constantly prompting the user for their username and password. Caching policy differs between browsers. where the crendential will be cached!!!
+
+* cookie / token vs. JWT (https://devops.com/session-tokens-vs-jwts-choosing-your-session-management-solution/)
+  - Token
+    - once authenticated, the user’s authentication state is stored in a server-side database as a record that includes 
+      - a primary identifier for the session (typically a random string that is at least 128 bits long), 
+      - an identifier for the user, 
+      - the time the session started, -
+      - the expiry of the session and, 
+      - sometimes, additional contextual information like the IP address.
+    - the session identifier is sent back to the client to be stored as a cookie in the user’s browser.
+    - enable more control but introduce some latency (server side token validation).
+  - JWT
+    - the user’s authentication data is stored as a JSON object, client-side, as soon as it’s issued by the server.
+    - no server side latency, but demand more developer investment to address their security complexities and ensure that the right guardrails are in place to prevent vulnerabilities.
+  - hybrid
+    - return both a session_token and a JWT when a user starts a session
+    - session_token is a static value that is good for the lifetime of the session
+    - while the JWT has its own, shorter-lived expiry, expired JWTs can be passed to the session API in order to retrieve a fresh JWT, and the servers ensure that the underlying session is still active before passing back a new JWT.
+
+* SSO vs. LDAP (lightweight directory access protocal) (https://en.wikipedia.org/wiki/Single_sign-on)
+  - Same sign-on achived by Directory Server Authentication: refers to systems requiring authentication for each application but using the same credentials from a directory server
+    - A common use of LDAP is to provide a central place to store usernames and passwords. This allows many different applications and services to connect to the LDAP server to validate users.
+    - play an important role in developing intranet and Internet applications by allowing the sharing of information about users, systems, networks, services, and applications throughout the network.
+    - As examples, directory services may provide any organized set of records, often with a hierarchical structure, such as a corporate email directory. 
+  - SSO refers to systems where a single authentication provides access to multiple applications by passing the authentication token seamlessly to configured applications
+    - which component store the authentication token
+    - which component will pass authentication token? 
+    - simple version of SSO: achieved over IP networks using cookies, sites/services share a common DNS parent domain
+    - re-visit to the sso work flow (https://www.onelogin.com/learn/how-single-sign-on-works)
+      1. A user browses to the application/service
+      2. The Service Provider sends a token that contains some information about the user, like their email address, to the SSO system, aka, the Identity Provider, as part of a request to authenticate the user.
+      3. The Identity Provider first checks to see whether the user has already been authenticated
+      4. If the user hasn’t logged in, they will be prompted to do so by providing the credentials required by the Identity Provider
+      5. it will send a token back to the Service Provider confirming a successful authentication. => This token is passed through the user’s browser to the Service Provider.
+      6. ID servier <=> service provider: token generated by ID server, received by service provider through user brower, service provider will check with ID server
+      7. user => service provider 
+    - cons
+      - reduced SSO: to have different level of access
+  - single sign off/log out: a single action of signing out terminates access to multiple software systems
+  - different application/system support different authetication mechanism, sso must internally store the credentials used for initial authentication and translate them to the credentials required for the different mechanisms
+  - pros
+    - reduce pwd fatigue and time spent on entering pwd
+    - simplify administration contorl
+* OAuth2.0, stands for open authentication
+  - users to level service1 to access user's data on service2, like amazon, google, fb, msft, twitter
+  - Designed specifically to work with Hypertext Transfer Protocol (HTTP)
+  - OAuth essentially allows access tokens to be issued by authorization server (owned by SERVICE2) to third-party clients SERVICE1 by an authorization server, with the approval of the resource owner.
+  - The third party SERVICE2 then uses the access token to access the protected resources hosted by the resource server
+
+
+
+### How to store passwords safely in the database and how to validate a password? 
+
+<p>
+  <img src="images/salt.jpg" style="width: 720px" />
+</p>
+
+ 
+**Things NOT to do**
+
+- Storing passwords in plain text is not a good idea because anyone with internal access can see them.
+
+- Storing password hashes directly is not sufficient because it is pruned to precomputation attacks, such as rainbow tables. 
+
+- To mitigate precomputation attacks, we salt the passwords. 
+
+**What is salt?**
+
+According to OWASP guidelines, “a salt is a unique, randomly generated string that is added to each password as part of the hashing process”.
+ 
+**How to store a password and salt?**
+
+1. the hash result is unique to each password.
+1. The password can be stored in the database using the following format: hash(password + salt).
+
+**How to validate a password?**
+
+To validate a password, it can go through the following process:
+
+1. A client enters the password.
+1. The system fetches the corresponding salt from the database.
+1. The system appends the salt to the password and hashes it. Let’s call the hashed value H1.
+1. The system compares H1 and H2, where H2 is the hash stored in the database. If they are the same, the password is valid. 
+
+Recap
+* It has two tables on application side:
+  - user id -> salt
+  - user id -> hash(salt + pwd)
+* questions
+  - if the pwd is seen when transport on internet? use encrypted version
+  - server side still see the real pwd but not storing any where (not even logged) or to write only log, or with strongly restricted access
+
+
 ### How does HTTPS work?
 
 Hypertext Transfer Protocol Secure (HTTPS) is an extension of the Hypertext Transfer Protocol (HTTP.) HTTPS transmits encrypted data using Transport Layer Security (TLS.) If the data is hijacked online, all the hijacker gets is binary code. 
@@ -1684,6 +2006,12 @@ Why does HTTPS switch to symmetric encryption during data transmission? There ar
 1. Security: The asymmetric encryption goes only one way. This means that if the server tries to send the encrypted data back to the client, anyone can decrypt the data using the public key.
 
 2. Server resources: The asymmetric encryption adds quite a lot of mathematical overhead. It is not suitable for data transmissions in long sessions.
+
+
+How https related to authentication, user|pwd, cookie/token, jwt, sso, auth2.0? 
+- this is used in establish secured tcp connection after authenticated
+- is the encryption the same as the one during authentication? this SSL, certificates
+
 
 ### Oauth 2.0 Explained With Simple Terms. 
 
@@ -1729,60 +2057,7 @@ Remember, OAuth 2.0 is all about keeping you and your data safe while making you
 
     User authentication information is used to verify and grant access to various systems and services
 
-### Session, cookie, JWT, token, SSO, and OAuth 2.0 - what are they?
 
-These terms are all related to user identity management. When you log into a website, you declare who you are (identification). Your identity is verified (authentication), and you are granted the necessary permissions (authorization). Many solutions have been proposed in the past, and the list keeps growing.
-
-<p>
-  <img src="images/session.jpeg" />
-</p>
-
-From simple to complex, here is my understanding of user identity management:
-
-- WWW-Authenticate is the most basic method. You are asked for the username and password by the browser. As a result of the inability to control the login life cycle, it is seldom used today.
-
-- A finer control over the login life cycle is session-cookie. The server maintains session storage, and the browser keeps the ID of the session. A cookie usually only works with browsers and is not mobile app friendly.
-
-- To address the compatibility issue, the token can be used. The client sends the token to the server, and the server validates the token. The downside is that the token needs to be encrypted and decrypted, which may be time-consuming.
-
-- JWT is a standard way of representing tokens. This information can be verified and trusted because it is digitally signed. Since JWT contains the signature, there is no need to save session information on the server side.
-
-- By using SSO (single sign-on), you can sign on only once and log in to multiple websites. It uses CAS (central authentication service) to maintain cross-site information.
-
-- By using OAuth 2.0, you can authorize one website to access your information on another website.
-
-### How to store passwords safely in the database and how to validate a password? 
-
-<p>
-  <img src="images/salt.jpg" style="width: 720px" />
-</p>
-
- 
-**Things NOT to do**
-
-- Storing passwords in plain text is not a good idea because anyone with internal access can see them.
-
-- Storing password hashes directly is not sufficient because it is pruned to precomputation attacks, such as rainbow tables. 
-
-- To mitigate precomputation attacks, we salt the passwords. 
-
-**What is salt?**
-
-According to OWASP guidelines, “a salt is a unique, randomly generated string that is added to each password as part of the hashing process”.
- 
-**How to store a password and salt?**
-
-1. the hash result is unique to each password.
-1. The password can be stored in the database using the following format: hash(password + salt).
-
-**How to validate a password?**
-
-To validate a password, it can go through the following process:
-
-1. A client enters the password.
-1. The system fetches the corresponding salt from the database.
-1. The system appends the salt to the password and hashes it. Let’s call the hashed value H1.
-1. The system compares H1 and H2, where H2 is the hash stored in the database. If they are the same, the password is valid. 
 
 ### Explaining JSON Web Token (JWT) to a 10 year old Kid
 
@@ -1832,7 +2107,13 @@ Steps 3 and 4: The frontend sends the password Bob enters to the backend for aut
  
 Step 5: The authentication service compares the two passwords generated by the client and the server, and returns the comparison result to the frontend. Bob can proceed with the login process only if the two passwords match.
  
-Is this authentication mechanism safe? 
+Is this authentication mechanism reasonable and safe? 
+
+- Are the timestamps used by client and server the same? 
+
+    It bascally store key in the user's device => prove if the user has the device
+    If user change device, then the key has to be redo?
+    If it is based on the initial timestamp when secret key was created 
 
 - Can the secret key be obtained by others? 
 

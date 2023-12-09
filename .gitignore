@@ -1,3 +1,8 @@
+
+dump.rdb
+kubectl.sha256
+minikube-darwin-amd64
+
 # Byte-compiled / optimized / DLL files
 *.epub
 __pycache__/
